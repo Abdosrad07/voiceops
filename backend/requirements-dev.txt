@@ -1,0 +1,8 @@
+-r requirements.txt
+
+# https://www.astral-sh.com/ruff - dead-simple linting
+ruff
+# test runner + httpx needed by FastAPI's TestClient
+pytest
+pytest-asyncio
+httpx
