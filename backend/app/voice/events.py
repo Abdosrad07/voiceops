@@ -33,10 +33,13 @@ def process_tool_call(name: str, arguments: str | dict[str, Any]) -> dict:
         return {"name": name, "result": None, "error": str(exc)}
 
 
-def tool_result_payload(tool_call_id: str, payload: dict) -> dict[str, Any]:
-    """Construit le payload JSON à injecter dans le flux de l'agent."""
+def tool_result_payload(tool_call_id: str, result: dict) -> dict[str, Any]:
+    """Construit le message `tool.result` conforme au protocole AssemblyAI.
+
+    Le résultat doit être envoyé après le `reply.done`, encodé en JSON (string).
+    """
     return {
-        "type": "function_call_output",
+        "type": "tool.result",
         "call_id": tool_call_id,
-        "output": json.dumps(payload, ensure_ascii=False),
+        "result": json.dumps(result, ensure_ascii=False),
     }

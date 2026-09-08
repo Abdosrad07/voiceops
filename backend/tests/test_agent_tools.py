@@ -63,10 +63,10 @@ def test_process_tool_call_success_and_error() -> None:
 
 def test_tool_result_payload_shape() -> None:
     payload = process_tool_call("check_dhcp", {"device": "PC-B204"})
-    out = tool_result_payload("call_1", payload)
-    assert out["type"] == "function_call_output"
+    out = tool_result_payload("call_1", payload["result"])
+    assert out["type"] == "tool.result"
     assert out["call_id"] == "call_1"
-    assert "PC-B204" in out["output"]
+    assert "PC-B204" in out["result"]
 
 
 def test_system_prompt_french_and_complete() -> None:

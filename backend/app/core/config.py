@@ -23,6 +23,13 @@ class Settings:
     debug: bool = env_bool("DEBUG", False)
     environment: str = os.getenv("ENVIRONMENT", "development")
     assemblyai_api_key: str = os.getenv("ASSEMBLYAI_API_KEY", "")
+    assemblyai_base_url: str = os.getenv(
+        "ASSEMBLYAI_BASE_URL", "https://api.assemblyai.com/v1"
+    )
+    voice_agent_ws_url: str = os.getenv(
+        "VOICE_AGENT_WS_URL", "wss://agents.assemblyai.com/v1/ws"
+    )
+    voice_name: str = os.getenv("VOICE_NAME", "ivy")
     database_url: str = os.getenv("DATABASE_URL", "sqlite:///./voiceops.db")
 
 
