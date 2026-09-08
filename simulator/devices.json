@@ -1,0 +1,69 @@
+{
+  "PC-B204": {
+    "type": "PC",
+    "ip": "169.254.14.23",
+    "gateway": "192.168.20.1",
+    "vlan": 10,
+    "expected_vlan": 20,
+    "dhcp": "failed",
+    "dns": "ok",
+    "status": "online",
+    "reachable": true
+  },
+  "PC-B203": {
+    "type": "PC",
+    "ip": "192.168.20.23",
+    "gateway": "192.168.20.1",
+    "vlan": 20,
+    "expected_vlan": 20,
+    "dhcp": "ok",
+    "dns": "failed",
+    "status": "online",
+    "reachable": true
+  },
+  "PC-B201": {
+    "type": "PC",
+    "ip": "192.168.20.21",
+    "gateway": "192.168.20.1",
+    "vlan": 20,
+    "expected_vlan": 20,
+    "dhcp": "ok",
+    "dns": "ok",
+    "status": "online",
+    "reachable": false
+  },
+  "SW-A101": {
+    "type": "Switch",
+    "ip": "192.168.10.101",
+    "vlan": 10,
+    "expected_vlan": 10,
+    "dhcp": "ok",
+    "dns": "ok",
+    "status": "online",
+    "reachable": true,
+    "ports": {
+      "Gi0/12": "PC-B204",
+      "Gi0/13": "PC-B203"
+    }
+  },
+  "RTR-CORE": {
+    "type": "Router",
+    "ip": "192.168.20.1",
+    "vlan": 20,
+    "expected_vlan": 20,
+    "dhcp": "ok",
+    "dns": "ok",
+    "status": "online",
+    "reachable": true
+  },
+  "DNS-01": {
+    "type": "DNS Server",
+    "ip": "10.10.0.53",
+    "vlan": 0,
+    "expected_vlan": 0,
+    "dhcp": "ok",
+    "dns": "ok",
+    "status": "online",
+    "reachable": true
+  }
+}

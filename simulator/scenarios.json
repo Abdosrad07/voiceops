@@ -1,0 +1,37 @@
+[
+  {
+    "id": "vlan",
+    "name": "VLAN mismatch",
+    "symptom": "PC inaccessible",
+    "cause": "Mauvais VLAN",
+    "devices": ["PC-B204"]
+  },
+  {
+    "id": "dhcp",
+    "name": "DHCP failure",
+    "symptom": "Adresse 169.254.x.x",
+    "cause": "Échec DHCP",
+    "devices": ["PC-B204"]
+  },
+  {
+    "id": "dns",
+    "name": "DNS failure",
+    "symptom": "Internet accessible par IP mais pas par nom",
+    "cause": "Problème DNS",
+    "devices": ["PC-B203"]
+  },
+  {
+    "id": "gateway",
+    "name": "Gateway unreachable",
+    "symptom": "PC correctement configuré mais passerelle inaccessible",
+    "cause": "Problème de connectivité locale",
+    "devices": ["PC-B201"]
+  },
+  {
+    "id": "interface",
+    "name": "Interface down",
+    "symptom": "Équipement inaccessible",
+    "cause": "Interface désactivée",
+    "devices": ["SW-A101"]
+  }
+]

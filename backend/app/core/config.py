@@ -23,6 +23,7 @@ class Settings:
     debug: bool = env_bool("DEBUG", False)
     environment: str = os.getenv("ENVIRONMENT", "development")
     assemblyai_api_key: str = os.getenv("ASSEMBLYAI_API_KEY", "")
+    database_url: str = os.getenv("DATABASE_URL", "sqlite:///./voiceops.db")
 
 
 settings = Settings()

@@ -1,0 +1,15 @@
+{
+  "switches": {
+    "SW-A101": {
+      "ports": {
+        "Gi0/12": {"device": "PC-B204", "vlan": 10, "expected_vlan": 20},
+        "Gi0/13": {"device": "PC-B203", "vlan": 20, "expected_vlan": 20}
+      },
+      "uplink": "RTR-CORE"
+    }
+  },
+  "links": [
+    {"from": "SW-A101", "to": "RTR-CORE"},
+    {"from": "RTR-CORE", "to": "DNS-01"}
+  ]
+}
