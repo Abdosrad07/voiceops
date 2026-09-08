@@ -30,6 +30,7 @@ class Settings:
         "VOICE_AGENT_WS_URL", "wss://agents.assemblyai.com/v1/ws"
     )
     voice_name: str = os.getenv("VOICE_NAME", "ivy")
+    rag_index_path: str = os.getenv("RAG_INDEX_PATH", str(BASE_DIR / "rag_index.json"))
     database_url: str = os.getenv("DATABASE_URL", "sqlite:///./voiceops.db")
 
 
