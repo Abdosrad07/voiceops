@@ -1166,3 +1166,26 @@ Le technicien n'a plus besoin de mémoriser chaque commande ou de parcourir plus
 Il décrit le problème.
 
 VoiceOps écoute, questionne, analyse, utilise ses outils et explique la solution.
+
+---
+
+32. Démarrage rapide
+
+Prérequis : Python 3.12, Node 18+, clé AssemblyAI (`backend/.env`, voir
+`backend/.env.example`).
+
+```bash
+cd backend && python -m pip install -r requirements.txt -r requirements-dev.txt
+cd frontend && npm install
+```
+
+Lancement : backend `python -m uvicorn app.main:app --reload` (port 8000),
+frontend `npm run dev` (port 5173). Documentation :
+
+- `docs/api.md` — référence des endpoints.
+- `docs/architecture.md` — architecture et flux vocal.
+- `docs/demo.md` — scénario de démo de bout en bout.
+- `docs/ROADMAP_EXECUTION.md` — plan d'exécution par phases.
+
+Validation locale : `make test` (ou les commandes du tableau d'AGENTS.md).
+Le pipeline GitHub Actions exécute lint + tests + build à chaque push/PR.
