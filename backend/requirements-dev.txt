@@ -6,3 +6,5 @@ ruff
 pytest
 pytest-asyncio
 httpx
+# couverture de code rapportée en CI
+pytest-cov

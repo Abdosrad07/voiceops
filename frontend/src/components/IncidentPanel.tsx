@@ -1,8 +1,12 @@
+import { memo } from 'react'
+
 import type { Incident } from '../services/api'
 
 interface IncidentPanelProps {
   incidents: Incident[]
   loading: boolean
+  searchTerm: string
+  onSearchChange: (value: string) => void
 }
 
 const SEVERITY_LABEL: Record<string, string> = {
@@ -12,16 +16,30 @@ const SEVERITY_LABEL: Record<string, string> = {
   critical: 'Critique',
 }
 
-export function IncidentPanel({ incidents, loading }: IncidentPanelProps) {
+function IncidentPanelInner({
+  incidents,
+  loading,
+  searchTerm,
+  onSearchChange,
+}: IncidentPanelProps) {
   return (
     <section className="panel" aria-label="Incidents">
       <h2>Incidents</h2>
+      <input
+        className="search"
+        type="search"
+        placeholder="Rechercher (titre, description…)"
+        aria-label="Rechercher dans les incidents"
+        maxLength={255}
+        value={searchTerm}
+        onChange={(event) => onSearchChange(event.target.value)}
+      />
       {loading ? (
         <p className="muted">Chargement…</p>
       ) : incidents.length === 0 ? (
         <p className="muted">Aucun incident enregistré.</p>
       ) : (
-        <ul className="incidents">
+        <ul className="incidents" aria-live="polite">
           {incidents.map((incident) => (
             <li key={incident.id} className="incident">
               <header>
@@ -43,3 +61,5 @@ export function IncidentPanel({ incidents, loading }: IncidentPanelProps) {
     </section>
   )
 }
+
+export const IncidentPanel = memo(IncidentPanelInner)

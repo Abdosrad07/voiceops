@@ -9,14 +9,16 @@ it('affiche Parler et déclenche le toggle', async () => {
   const user = userEvent.setup()
   render(<MicButton active={false} supported onToggle={onToggle} />)
 
-  const button = screen.getByRole('button', { name: /parler/i })
+  const button = screen.getByRole('button', { name: /écoute vocale/i })
   await user.click(button)
   expect(onToggle).toHaveBeenCalledTimes(1)
 })
 
 it('affiche Arrêter quand actif', () => {
   render(<MicButton active supported onToggle={() => undefined} />)
-  expect(screen.getByRole('button', { name: /arrêter/i })).toBeInTheDocument()
+  expect(
+    screen.getByRole('button', { name: /arrêter .*écoute vocale/i }),
+  ).toBeInTheDocument()
 })
 
 it('est désactivé quand le micro n’est pas supporté', () => {

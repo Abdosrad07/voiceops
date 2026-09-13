@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Text
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -9,6 +9,11 @@ from app.models.incident import utcnow
 
 class ToolCall(Base):
     __tablename__ = "tool_calls"
+    __table_args__ = (
+        Index("ix_tool_calls_session_id", "session_id"),
+        Index("ix_tool_calls_tool_name", "tool_name"),
+        Index("ix_tool_calls_created_at", "created_at"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     session_id: Mapped[int | None] = mapped_column(

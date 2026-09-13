@@ -56,12 +56,19 @@ Le scénario MVP : *« Le PC du bureau 204 n'a plus de réseau »*.
 ## Tests & validation
 
 ```bash
-cd backend  && .venv\Scripts\python -m pytest && .venv\Scripts\ruff.exe check .
+cd backend  && .venv\Scripts\python -m pytest --cov=app --cov-report=term-missing && .venv\Scripts\ruff.exe check .
 cd frontend && npm run lint && npm test && npm run build
 ```
 
-49 tests backend + 13 tests frontend. Le pipeline GitHub Actions exécute ces
-vérifications à chaque push/PR.
+76 tests backend + 19 tests frontend. Le pipeline GitHub Actions exécute ces
+vérifications (avec coverage) à chaque push/PR.
+
+## Supervision
+
+- `GET /health` : sonde basique.
+- `GET /health/deep` : DB, index RAG, configuration AssemblyAI (`status: degraded`
+  si la clé est absente — normal sans `.env`).
+- Logs structurés JSON sur stdout (request-id, durée, audit des incidents/sessions/outils).
 
 ## Sans clé AssemblyAI (mode données)
 

@@ -24,18 +24,22 @@ seul exécuteur des outils (le navigateur relaie `tool.call` via
 
 | Module | Rôle |
 | --- | --- |
-| `main.py` | App FastAPI, lifespan (`init_db`), montage des routers. |
+| `main.py` | App FastAPI, lifespan (`init_db` + dispose propre), middlewares, montage des routers. |
+| `api/routes/health.py` | `/health` + `/health/deep` (DB, RAG, AssemblyAI). |
 | `api/routes/diagnostics.py` | Diagnostic réseau (IP, VLAN, DHCP, DNS, passerelle…). |
-| `api/routes/incidents.py` | CRUD incidents + historique de statut. |
+| `api/routes/incidents.py` | CRUD incidents paginé/filtrable + workflow de statut strict + audit. |
 | `api/routes/reports.py` | Génération et lecture des rapports structurés. |
-| `api/routes/voice.py` | `/api/voice-token`, `/api/tools/execute`, sessions. |
+| `api/routes/voice.py` | `/api/voice-token`, `/api/tools/execute`, sessions (liste paginée). |
 | `core/config.py` | Settings (`.env`), `settings` global. |
 | `core/security.py` | Clé API (serveur uniquement), assainissement d'entrées. |
-| `network/` | `simulator.py` (chargement JSON), `devices.py`, `diagnostics.py`. |
-| `agents/tools.py` | Registry d'outils + `execute_tool_call` (liste blanche). |
+| `core/logging.py` | Logs structurés JSON + request-id + `audit_log`. |
+| `core/middleware.py` | Headers de sécurité, CORS, rate limiting par IP, logs de requêtes. |
+| `core/resilience.py` | Retry exponentiel + circuit breaker (AssemblyAI). |
+| `network/` | `simulator.py` (JSON + latence optionnelle), `devices.py`, `diagnostics.py`. |
+| `agents/tools.py` | Registry d'outils + `execute_tool_call` (validation stricte, timeout). |
 | `agents/prompts.py` | Prompt système VoiceOps (français). |
 | `voice/events.py` | Middleware de tool calling, `tool_result_payload`. |
-| `voice/assemblyai.py` | Token temporaire (`GET /v1/token`) + config de session. |
+| `voice/assemblyai.py` | Token temporaire (retry + circuit) + config de session. |
 | `voice/sessions.py` | Cycle de vie des sessions voix. |
 | `rag/` | `embeddings.py` (TF-IDF local), `index.py`, `retriever.py`. |
 | `models/` | `Incident`, `Session`, `Report`, `ToolCall`. |
@@ -72,4 +76,18 @@ seul exécuteur des outils (le navigateur relaie `tool.call` via
 - `ASSEMBLYAI_API_KEY` uniquement côté serveur (`.env`, gitignoré).
 - Token navigateur : temporaire, mono-usage, généré par le backend.
 - Tools : liste blanche dans `agents/tools.py` (jamais de shell/exécution réelle).
+  Arguments validés contre le schéma (≤ 5, types/enums) + budget temps.
+- Headers de sécurité, CSP, CORS restreinte, rate limiting par IP, gzip > 1 Ko.
+- Retry exponentiel (timeouts/5xx) + circuit breaker sur les appels AssemblyAI.
+- Logs structurés JSON (request-id) ; audit des incidents/sessions/appels d'outils,
+  jamais de données sensibles.
 - Le simulateur répond seul : aucun accès aux équipements réels.
+
+## Base de données (SQLite)
+
+- PRAGMAs : `journal_mode=WAL`, `synchronous=NORMAL`, `temp_store=MEMORY`,
+  `cache_size=-10000`, `busy_timeout`, `foreign_keys=ON`.
+- Pool de connexions : `pool_size=5`, `max_overflow=10`, `pool_pre_ping=True`.
+- Index : `incidents` (device, category, severity, status, created_at),
+  `sessions` (incident_id, started_at), `tool_calls` (session_id, tool_name, created_at).
+- Arrêt propre (dispose) via le lifespan FastAPI.

@@ -46,6 +46,8 @@ lerna-debug.log*
 # Databases / generated data
 *.db
 *.sqlite3
+*.db-wal
+*.db-shm
 simulator/output/
 
 # Editor / OS

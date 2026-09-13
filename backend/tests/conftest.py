@@ -4,8 +4,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.database import Base, get_db
-from app.main import app
+from app.core.config import settings
+
+# Les tests unitaires bypassent le rate limiting par IP.
+settings.rate_limit_enabled = False
+
+from app.database import Base, get_db  # noqa: E402
+from app.main import app  # noqa: E402
 
 
 @pytest.fixture()

@@ -1,12 +1,14 @@
+import { memo } from 'react'
+
 import type { TranscriptItem } from '../hooks/useVoiceAgent'
 
 interface TranscriptPanelProps {
   items: TranscriptItem[]
 }
 
-export function TranscriptPanel({ items }: TranscriptPanelProps) {
+function TranscriptPanelInner({ items }: TranscriptPanelProps) {
   return (
-    <section className="panel" aria-label="Transcript">
+    <section className="panel" aria-label="Conversation" aria-live="polite">
       <h2>Conversation</h2>
       {items.length === 0 ? (
         <p className="muted">Aucun échange pour le moment.</p>
@@ -23,3 +25,5 @@ export function TranscriptPanel({ items }: TranscriptPanelProps) {
     </section>
   )
 }
+
+export const TranscriptPanel = memo(TranscriptPanelInner)

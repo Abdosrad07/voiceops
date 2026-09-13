@@ -1,5 +1,9 @@
 import json
+import random
+import time
 from pathlib import Path
+
+from app.core.config import settings
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
 SIMULATOR_DIR = BACKEND_DIR.parent / "simulator"
@@ -16,8 +20,11 @@ class ScenarioNotFoundError(KeyError):
 class NetworkSimulator:
     """Environnement réseau 100 % simulé (aucun accès au matériel réel)."""
 
-    def __init__(self, data_dir: Path = SIMULATOR_DIR) -> None:
+    def __init__(self, data_dir: Path = SIMULATOR_DIR, simulate_latency: bool | None = None):
         self.data_dir = data_dir
+        self.simulate_latency = (
+            settings.simulate_latency if simulate_latency is None else simulate_latency
+        )
         self.devices: dict = self._load("devices.json")
         self.topology: dict = self._load("topology.json")
         self.scenarios: list = self._load("scenarios.json")
@@ -26,22 +33,31 @@ class NetworkSimulator:
         with (self.data_dir / filename).open(encoding="utf-8") as fh:
             return json.load(fh)
 
+    def _maybe_latency(self) -> None:
+        """Reproduit une latence réseau réaliste (100-500 ms) si activée."""
+        if self.simulate_latency:
+            time.sleep(random.uniform(0.1, 0.5))
+
     def get_device(self, name: str) -> dict:
+        self._maybe_latency()
         try:
             return self.devices[name]
         except KeyError as exc:
             raise DeviceNotFoundError(name) from exc
 
     def list_devices(self) -> list[dict]:
+        self._maybe_latency()
         return [{"name": name, **device} for name, device in self.devices.items()]
 
     def get_scenario(self, scenario_id: str) -> dict:
+        self._maybe_latency()
         for scenario in self.scenarios:
             if scenario["id"] == scenario_id:
                 return scenario
         raise ScenarioNotFoundError(scenario_id)
 
     def list_scenarios(self) -> list[dict]:
+        self._maybe_latency()
         return self.scenarios
 
 

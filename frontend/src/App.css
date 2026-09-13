@@ -228,3 +228,103 @@
   color: var(--text-strong);
   margin: 0;
 }
+
+/* Recherche incidents */
+.search {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 14px;
+}
+
+.search::placeholder {
+  color: var(--muted);
+}
+
+.search:focus-visible {
+  border-color: var(--accent);
+}
+
+/* Barre d'état micro */
+.record-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  margin: 0 0 16px;
+}
+
+.record-bar:not(.record-bar-active) {
+  visibility: hidden;
+}
+
+.record-bar-segment {
+  width: 4px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--ok);
+  animation: record-pulse 1s ease-in-out infinite;
+}
+
+.record-bar-segment:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.record-bar-segment:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.record-bar-segment:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+.record-bar-text {
+  margin-left: 8px;
+  font-size: 13px;
+  color: var(--ok);
+}
+
+@keyframes record-pulse {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .record-bar-segment {
+    animation: none;
+  }
+}
+
+.app-footer {
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .topbar {
+    flex-wrap: wrap;
+  }
+
+  .topbar h1 {
+    width: 100%;
+  }
+
+  .mic-button {
+    min-height: 48px;
+  }
+}

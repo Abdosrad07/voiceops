@@ -7,9 +7,56 @@ uniquement lorsque cela est nécessaire.
 
 import json
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
+from app.core.config import settings
 from app.network import diagnostics
+
+MAX_ARGUMENTS = 5
+
+
+class ToolTimeoutError(RuntimeError):
+    """Exécution d'un outil au-delà de son budget temps."""
+
+
+def _tool_schema(name: str) -> dict:
+    for tool in TOOLS:
+        if tool["name"] == name:
+            return tool["parameters"]
+    raise ValueError(f"Outil non autorisé : {name}")
+
+
+def validate_arguments(name: str, params: dict[str, Any]) -> None:
+    """Validation stricte des arguments contre le schéma déclaré (liste blanche)."""
+    if not isinstance(params, dict):
+        raise ValueError("arguments doit être un objet JSON")
+    if len(params) > MAX_ARGUMENTS:
+        raise ValueError(f"Trop de paramètres (maximum {MAX_ARGUMENTS})")
+    schema = _tool_schema(name)
+    properties = schema.get("properties", {})
+    required = set(schema.get("required", []))
+
+    unknown = set(params) - set(properties)
+    if unknown:
+        raise ValueError(f"Paramètres inconnus : {sorted(unknown)}")
+    missing = required - set(params)
+    if missing:
+        raise ValueError(f"Paramètres requis manquants : {sorted(missing)}")
+
+    for key, value in params.items():
+        prop = properties.get(key, {})
+        prop_type = prop.get("type")
+        ptype_ok = {
+            "string": lambda v: isinstance(v, str),
+            "integer": lambda v: isinstance(v, int) and not isinstance(v, bool),
+            "number": lambda v: isinstance(v, (int, float)) and not isinstance(v, bool),
+            "boolean": lambda v: isinstance(v, bool),
+        }.get(prop_type, lambda v: True)
+        if not ptype_ok(value):
+            raise ValueError(f"Paramètre '{key}' de type invalide (attendu {prop_type})")
+        if "enum" in prop and value not in prop["enum"]:
+            raise ValueError(f"Paramètre '{key}' hors valeurs autorisées")
 
 
 def _device_schema(extra: dict | None = None) -> dict:
@@ -130,19 +177,36 @@ _HANDLERS: dict[str, Callable[..., dict]] = {
 }
 
 
-def execute_tool_call(name: str, arguments: str | dict[str, Any]) -> dict:
+def _run_with_timeout(
+    handler: Callable[..., dict], params: dict[str, Any], timeout: float
+) -> Any:
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(handler, **params)
+        try:
+            return future.result(timeout=timeout)
+        except TimeoutError as exc:
+            raise ToolTimeoutError(
+                f"Délai d'exécution dépassé ({timeout:g}s)"
+            ) from exc
+
+
+def execute_tool_call(
+    name: str, arguments: str | dict[str, Any], timeout: float | None = None
+) -> dict:
     """Exécute un appel d'outil (nom + arguments JSON) et renvoie le résultat.
 
-    Coeur du middleware de tool calling : validation de la liste blanche puis
-    exécution de la fonction Python correspondante.
+    Coeur du middleware de tool calling : liste blanche, validation stricte des
+    arguments contre le schéma déclaré, puis exécution avec budget temps.
     """
     if name not in _HANDLERS:
         raise ValueError(f"Outil non autorisé : {name}")
     params: dict[str, Any] = (
         json.loads(arguments) if isinstance(arguments, str) else (arguments or {})
     )
+    validate_arguments(name, params)
     handler = _HANDLERS[name]
-    result = handler(**params)
+    budget = timeout if timeout is not None else settings.tool_timeout_seconds
+    result = _run_with_timeout(handler, params, budget)
     return result if isinstance(result, dict) else {"result": result}
 
 

@@ -14,8 +14,13 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status }: StatusBadgeProps) {
   return (
-    <span className={`badge badge-${status}`} role="status">
-      <span className="dot" /> {LABELS[status]}
+    <span
+      className={`badge badge-${status}`}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <span className="dot" aria-hidden="true" /> {LABELS[status]}
     </span>
   )
 }

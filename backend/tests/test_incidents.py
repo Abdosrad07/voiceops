@@ -28,7 +28,9 @@ def test_list_and_get_incident(db_client) -> None:
 
     response = db_client.get("/api/incidents")
     assert response.status_code == 200
-    assert len(response.json()) == 2
+    body = response.json()
+    assert body["total"] == 2
+    assert len(body["items"]) == 2
 
     detail = db_client.get("/api/incidents/1")
     assert detail.status_code == 200
@@ -43,9 +45,11 @@ def test_update_incident_status_tracks_history(db_client) -> None:
     assert response.json()["status"] == "INVESTIGATING"
 
     history = db_client.get("/api/incidents/1/history").json()["history"]
-    assert len(history) == 1
-    assert history[0]["from"] == "OPEN"
-    assert history[0]["to"] == "INVESTIGATING"
+    assert len(history) == 2  # entrée initiale OPEN + transition
+    assert history[0]["from"] is None
+    assert history[0]["to"] == "OPEN"
+    assert history[1]["from"] == "OPEN"
+    assert history[1]["to"] == "INVESTIGATING"
 
     invalid = db_client.patch("/api/incidents/1", json={"status": "BOGUS"})
     assert invalid.status_code == 422

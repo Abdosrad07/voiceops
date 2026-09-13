@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, DateTime, Integer, String, Text
+from sqlalchemy import JSON, DateTime, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -12,6 +12,13 @@ def utcnow() -> datetime:
 
 class Incident(Base):
     __tablename__ = "incidents"
+    __table_args__ = (
+        Index("ix_incidents_device", "device"),
+        Index("ix_incidents_category", "category"),
+        Index("ix_incidents_severity", "severity"),
+        Index("ix_incidents_status", "status"),
+        Index("ix_incidents_created_at", "created_at"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)

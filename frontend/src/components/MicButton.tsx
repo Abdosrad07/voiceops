@@ -1,10 +1,12 @@
+import { memo } from 'react'
+
 interface MicButtonProps {
   active: boolean
   supported: boolean
   onToggle: () => void
 }
 
-export function MicButton({ active, supported, onToggle }: MicButtonProps) {
+function MicButtonInner({ active, supported, onToggle }: MicButtonProps) {
   return (
     <button
       type="button"
@@ -12,6 +14,7 @@ export function MicButton({ active, supported, onToggle }: MicButtonProps) {
       onClick={onToggle}
       disabled={!supported}
       aria-pressed={active}
+      aria-label={active ? "Arrêter l'écoute vocale" : 'Démarrer l’écoute vocale'}
     >
       <svg
         className="mic-icon"
@@ -33,3 +36,5 @@ export function MicButton({ active, supported, onToggle }: MicButtonProps) {
     </button>
   )
 }
+
+export const MicButton = memo(MicButtonInner)

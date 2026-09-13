@@ -1,5 +1,5 @@
 :root {
-  --text: #9ca3af;
+  --text: #b0b7c3;
   --text-h: #f3f4f6;
   --text-strong: #e5e7eb;
   --bg: #16171d;
@@ -10,7 +10,7 @@
   --ok: #34d399;
   --warn: #fbbf24;
   --err: #f87171;
-  --muted: #6b7280;
+  --muted: #848c9a;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
@@ -58,4 +58,15 @@ code {
   color: var(--text-strong);
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
 }

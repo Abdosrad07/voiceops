@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer
+from sqlalchemy import DateTime, ForeignKey, Index, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -9,6 +9,10 @@ from app.models.incident import utcnow
 
 class Session(Base):
     __tablename__ = "sessions"
+    __table_args__ = (
+        Index("ix_sessions_incident_id", "incident_id"),
+        Index("ix_sessions_started_at", "started_at"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     incident_id: Mapped[int | None] = mapped_column(

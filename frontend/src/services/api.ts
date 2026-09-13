@@ -33,6 +33,22 @@ export interface Incident {
   updated_at: string | null
 }
 
+export interface PaginatedResponse<T> {
+  items: T[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export type IncidentFilters = Partial<{
+  status: string
+  severity: string
+  device: string
+  q: string
+  limit: number
+  offset: number
+}>
+
 export interface DeviceInfo {
   name: string
   type: string
@@ -71,9 +87,21 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T
 }
 
+function toQueryString(filters: Record<string, string | number | undefined>): string {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== '') params.append(key, String(value))
+  }
+  const qs = params.toString()
+  return qs ? `?${qs}` : ''
+}
+
 export const api = {
   getVoiceToken: () => request<VoiceTokenResponse>('/voice-token'),
-  listIncidents: () => request<Incident[]>('/incidents'),
+
+  listIncidents: (filters?: IncidentFilters) =>
+    request<PaginatedResponse<Incident>>(`/incidents${toQueryString(filters ?? {})}`),
+
   listDevices: () => request<DeviceInfo[]>('/diagnostics/devices'),
   getDiagnosis: (device: string) =>
     request<Diagnosis>(
