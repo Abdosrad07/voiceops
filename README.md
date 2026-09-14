@@ -334,7 +334,7 @@ Tool Calls
 │ Simulator │ │ Base │
 │ │ │ │
 │ Devices │ │ Documents │
-│ VLANs │ │ RAG / FAISS │
+│ VLANs │ │ RAG / TF-IDF │
 │ DHCP │ │ │
 │ DNS │ │ │
 └──────────────┘ └──────────────┘
@@ -358,7 +358,7 @@ Frontend
 React
 TypeScript
 Vite
-Tailwind CSS
+CSS (vanilla, aucun framework UI)
 
 Backend
 
@@ -366,7 +366,7 @@ Python 3.12+
 FastAPI
 Uvicorn
 Pydantic
-SQLAlchemy
+SQLAlchemy (sync)
 
 Voice
 
@@ -377,9 +377,8 @@ AudioWorklet
 IA / Knowledge
 
 AssemblyAI Voice Agent
-FAISS
-Embeddings
-RAG
+RAG local (index TF-IDF + recherche sémantique)
+Retrieval paresseux (dégradé propre sans index)
 
 Database
 
@@ -424,96 +423,108 @@ Une migration vers PostgreSQL pourra être envisagée ultérieurement si VoiceOp
 voiceops/
 │
 ├── frontend/
-│ │
-│ ├── src/
-│ │ ├── components/
-│ │ │ ├── VoiceInterface.tsx
-│ │ │ ├── Transcript.tsx
-│ │ │ ├── ToolCall.tsx
-│ │ │ ├── DiagnosisPanel.tsx
-│ │ │ └── IncidentPanel.tsx
-│ │ │
-│ │ ├── pages/
-│ │ │ ├── Dashboard.tsx
-│ │ │ └── Incident.tsx
-│ │ │
-│ │ ├── hooks/
-│ │ │ └── useVoiceAgent.ts
-│ │ │
-│ │ ├── services/
-│ │ │ └── api.ts
-│ │ │
-│ │ └── App.tsx
-│ │
-│ ├── package.json
-│ └── vite.config.ts
+│   │
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── MicButton.tsx
+│   │   │   ├── TranscriptPanel.tsx
+│   │   │   ├── ToolCallList.tsx
+│   │   │   ├── IncidentPanel.tsx
+│   │   │   ├── StatusBadge.tsx
+│   │   │   └── RecordBar.tsx
+│   │   │
+│   │   ├── hooks/
+│   │   │   └── useVoiceAgent.ts
+│   │   │
+│   │   ├── services/
+│   │   │   ├── api.ts
+│   │   │   └── voiceProtocol.ts
+│   │   │
+│   │   ├── utils/
+│   │   │   └── useDebounce.ts
+│   │   │
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   │
+│   ├── public/
+│   │   └── pcm-worklet.js
+│   ├── package.json
+│   ├── vitest.config.ts
+│   └── vite.config.ts
 │
 ├── backend/
-│ │
-│ ├── app/
-│ │ ├── main.py
-│ │ │
-│ │ ├── api/
-│ │ │ └── routes/
-│ │ │ ├── voice.py
-│ │ │ ├── incidents.py
-│ │ │ ├── diagnostics.py
-│ │ │ └── reports.py
-│ │ │
-│ │ ├── core/
-│ │ │ ├── config.py
-│ │ │ └── security.py
-│ │ │
-│ │ ├── voice/
-│ │ │ ├── assemblyai.py
-│ │ │ ├── sessions.py
-│ │ │ └── events.py
-│ │ │
-│ │ ├── agents/
-│ │ │ ├── prompts.py
-│ │ │ └── tools.py
-│ │ │
-│ │ ├── network/
-│ │ │ ├── simulator.py
-│ │ │ ├── devices.py
-│ │ │ └── diagnostics.py
-│ │ │
-│ │ ├── rag/
-│ │ │ ├── embeddings.py
-│ │ │ ├── index.py
-│ │ │ └── retriever.py
-│ │ │
-│ │ ├── models/
-│ │ │ ├── incident.py
-│ │ │ ├── session.py
-│ │ │ └── report.py
-│ │ │
-│ │ └── database.py
-│ │
-│ ├── tests/
-│ ├── requirements.txt
-│ └── .env
+│   │
+│   ├── app/
+│   │   ├── main.py
+│   │   │
+│   │   ├── api/
+│   │   │   └── routes/
+│   │   │       ├── health.py
+│   │   │       ├── voice.py
+│   │   │       ├── incidents.py
+│   │   │       ├── diagnostics.py
+│   │   │       └── reports.py
+│   │   │
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   ├── security.py
+│   │   │   ├── logging.py
+│   │   │   ├── middleware.py
+│   │   │   └── resilience.py
+│   │   │
+│   │   ├── voice/
+│   │   │   ├── assemblyai.py
+│   │   │   ├── sessions.py
+│   │   │   └── events.py
+│   │   │
+│   │   ├── agents/
+│   │   │   ├── prompts.py
+│   │   │   └── tools.py
+│   │   │
+│   │   ├── network/
+│   │   │   ├── simulator.py
+│   │   │   ├── devices.py
+│   │   │   └── diagnostics.py
+│   │   │
+│   │   ├── rag/
+│   │   │   ├── embeddings.py
+│   │   │   ├── index.py
+│   │   │   └── retriever.py
+│   │   │
+│   │   ├── models/
+│   │   │   ├── incident.py
+│   │   │   ├── session.py
+│   │   │   ├── report.py
+│   │   │   └── tool_call.py
+│   │   │
+│   │   └── database.py
+│   │
+│   ├── tests/
+│   ├── requirements.txt
+│   ├── requirements-dev.txt
+│   └── .env
 │
 ├── knowledge/
-│ ├── cisco/
-│ ├── networking/
-│ ├── telecom/
-│ └── troubleshooting/
+│   ├── cisco/
+│   ├── networking/
+│   ├── telecom/
+│   └── troubleshooting/
 │
 ├── simulator/
-│ ├── devices.json
-│ ├── topology.json
-│ └── scenarios.json
-│
-├── tests/
+│   ├── devices.json
+│   ├── topology.json
+│   └── scenarios.json
 │
 ├── docs/
-│ ├── architecture.md
-│ ├── api.md
-│ └── demo.md
+│   ├── architecture.md
+│   ├── api.md
+│   ├── demo.md
+│   └── ROADMAP_EXECUTION.md
 │
+├── Makefile
 ├── .gitignore
 ├── .env.example
+├── DEMO.md
 └── README.md
 
 ---
@@ -829,9 +840,9 @@ Parsing
 ↓
 Chunking
 ↓
-Embeddings
+Vectorisation TF-IDF
 ↓
-FAISS
+Index TF-IDF local
 ↓
 Semantic Search
 ↓
@@ -963,78 +974,81 @@ test: add vlan diagnostic tests
 
 25. Roadmap
 
+Statut au 14/09/2026 : Phases 1 à 7 réalisées, Phase 8 en cours (reste :
+démo enregistrée, pitch).
+
 Phase 1 — Foundation
 
-- [ ] Initialiser GitHub
-- [ ] Initialiser React
-- [ ] Initialiser FastAPI
-- [ ] Configurer SQLite
-- [ ] Configurer ".env"
-- [ ] Health check
+- [x] Initialiser GitHub
+- [x] Initialiser React
+- [x] Initialiser FastAPI
+- [x] Configurer SQLite
+- [x] Configurer ".env"
+- [x] Health check
 
 Phase 2 — Voice Agent
 
-- [ ] Temporary token
-- [ ] WebSocket AssemblyAI
-- [ ] Microphone
-- [ ] AudioWorklet
-- [ ] Speech-to-text
-- [ ] Agent response
-- [ ] Text-to-speech
-- [ ] Interruptions
+- [x] Temporary token
+- [x] WebSocket AssemblyAI
+- [x] Microphone
+- [x] AudioWorklet
+- [x] Speech-to-text
+- [x] Agent response
+- [x] Text-to-speech
+- [x] Interruptions
 
 Phase 3 — Agentic capabilities
 
-- [ ] Tool definitions
-- [ ] Tool calling
-- [ ] Tool results
-- [ ] Agent reasoning
-- [ ] Error handling
+- [x] Tool definitions
+- [x] Tool calling
+- [x] Tool results
+- [x] Agent reasoning
+- [x] Error handling
 
 Phase 4 — Network Simulator
 
-- [ ] Devices
-- [ ] Topology
-- [ ] VLAN
-- [ ] DHCP
-- [ ] DNS
-- [ ] Gateway
-- [ ] Diagnostic scenarios
+- [x] Devices
+- [x] Topology
+- [x] VLAN
+- [x] DHCP
+- [x] DNS
+- [x] Gateway
+- [x] Diagnostic scenarios
 
 Phase 5 — Knowledge
 
-- [ ] Documents
-- [ ] Chunking
-- [ ] Embeddings
-- [ ] FAISS
-- [ ] Retrieval
-- [ ] Agent integration
+- [x] Documents
+- [x] Chunking
+- [x] Vectorisation TF-IDF
+- [x] Index TF-IDF local
+- [x] Retrieval
+- [x] Agent integration
 
 Phase 6 — Incident management
 
-- [ ] Create incident
-- [ ] Update incident
-- [ ] Incident history
-- [ ] Diagnosis
-- [ ] Report generation
+- [x] Create incident
+- [x] Update incident
+- [x] Incident history
+- [x] Diagnosis
+- [x] Report generation
 
 Phase 7 — UI
 
-- [ ] Voice interface
-- [ ] Transcript
-- [ ] Agent status
-- [ ] Tool calls
-- [ ] Diagnosis panel
-- [ ] Incident panel
-- [ ] History
+- [x] Voice interface
+- [x] Transcript
+- [x] Agent status
+- [x] Tool calls
+- [x] Diagnosis panel
+- [x] Incident panel
+- [x] History
 
 Phase 8 — Hackathon
 
 - [ ] Deploy application
-- [ ] Test complete scenario
+- [x] Test complete scenario
 - [ ] Record demo
 - [ ] Prepare pitch
-- [ ] Prepare README
+- [x] Prepare README
 - [ ] Final submission
 
 ---
@@ -1149,7 +1163,7 @@ Ces fonctionnalités ne font pas partie du MVP du hackathon.
 
 30. Statut du projet
 
-Status: In Development
+Status: MVP fonctionnel (démo prête)
 Version: 0.1.0
 Environment: Windows
 Database: SQLite
@@ -1182,6 +1196,7 @@ cd frontend && npm install
 Lancement : backend `python -m uvicorn app.main:app --reload` (port 8000),
 frontend `npm run dev` (port 5173). Documentation :
 
+- `DEMO.md` — guide de démonstration (live et scriptée) et vérification rapide.
 - `docs/api.md` — référence des endpoints.
 - `docs/architecture.md` — architecture et flux vocal.
 - `docs/demo.md` — scénario de démo de bout en bout.
