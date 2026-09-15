@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
-from app.network import diagnostics
+from app.database import get_db
+from app.network import active, diagnostics
 from app.network.devices import (
     DeviceNotFoundError,
     get_device,
@@ -23,37 +25,37 @@ TOOLS: dict[str, callable] = {
 
 
 @router.get("/devices")
-def api_list_devices() -> list[dict]:
-    return list_devices()
+def api_list_devices(db: Session = Depends(get_db)) -> list[dict]:
+    return list_devices(active.active_simulator(db))
 
 
 @router.get("/scenarios")
-def api_list_scenarios() -> list[dict]:
-    return list_scenarios()
+def api_list_scenarios(db: Session = Depends(get_db)) -> list[dict]:
+    return list_scenarios(active.active_simulator(db))
 
 
 @router.get("/device/{name}/diagnosis")
-def api_diagnosis(name: str) -> dict:
+def api_diagnosis(name: str, db: Session = Depends(get_db)) -> dict:
     try:
-        return diagnostics.diagnosis(name)
+        return diagnostics.diagnosis(name, active.active_simulator(db))
     except DeviceNotFoundError:
         raise HTTPException(status_code=404, detail=f"Équipement inconnu : {name}") from None
 
 
 @router.get("/device/{name}/{tool}")
-def api_run_tool(name: str, tool: str) -> dict:
+def api_run_tool(name: str, tool: str, db: Session = Depends(get_db)) -> dict:
     if tool not in TOOLS:
         raise HTTPException(status_code=400, detail=f"Outil inconnu : {tool}")
     try:
-        return TOOLS[tool](name)
+        return TOOLS[tool](name, active.active_simulator(db))
     except DeviceNotFoundError:
         raise HTTPException(status_code=404, detail=f"Équipement inconnu : {name}") from None
 
 
 @router.get("/device/{name}")
-def api_get_device(name: str) -> dict:
+def api_get_device(name: str, db: Session = Depends(get_db)) -> dict:
     try:
-        device = get_device(name)
+        device = get_device(name, active.active_simulator(db))
     except DeviceNotFoundError:
         raise HTTPException(status_code=404, detail=f"Équipement inconnu : {name}") from None
     return {"name": name, **device}

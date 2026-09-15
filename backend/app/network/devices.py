@@ -1,26 +1,36 @@
+"""Accès générique aux équipements du réseau actif.
+
+Les fonctions acceptent un simulateur explicite (tests) ou résolvent le
+réseau actif (importé en base, sinon démo statique) automatiquement.
+"""
+
+from app.network import active
 from app.network.simulator import (
     DeviceNotFoundError,
     NetworkSimulator,
     ScenarioNotFoundError,
-    simulator,
 )
 
 
-def get_device(name: str, sim: NetworkSimulator = simulator) -> dict:
-    """Retourne l'équipement simulé ou lève DeviceNotFoundError."""
-    return sim.get_device(name)
+def _sim(sim: NetworkSimulator | None) -> NetworkSimulator:
+    return sim if sim is not None else active.active_simulator()
 
 
-def list_devices(sim: NetworkSimulator = simulator) -> list[dict]:
-    return sim.list_devices()
+def get_device(name: str, sim: NetworkSimulator | None = None) -> dict:
+    """Retourne l'équipement du réseau actif ou lève DeviceNotFoundError."""
+    return _sim(sim).get_device(name)
 
 
-def get_scenario(scenario_id: str, sim: NetworkSimulator = simulator) -> dict:
-    return sim.get_scenario(scenario_id)
+def list_devices(sim: NetworkSimulator | None = None) -> list[dict]:
+    return _sim(sim).list_devices()
 
 
-def list_scenarios(sim: NetworkSimulator = simulator) -> list[dict]:
-    return sim.list_scenarios()
+def get_scenario(scenario_id: str, sim: NetworkSimulator | None = None) -> dict:
+    return _sim(sim).get_scenario(scenario_id)
+
+
+def list_scenarios(sim: NetworkSimulator | None = None) -> list[dict]:
+    return _sim(sim).list_scenarios()
 
 
 __all__ = [

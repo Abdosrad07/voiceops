@@ -1,17 +1,22 @@
-from app.network.simulator import DeviceNotFoundError, NetworkSimulator, simulator
+from app.network import active
+from app.network.simulator import DeviceNotFoundError, NetworkSimulator
 
 APIPA_PREFIX = "169.254."
 
 
-def _requires_device(name: str, sim: NetworkSimulator) -> dict:
+def _sim(sim: NetworkSimulator | None) -> NetworkSimulator:
+    return sim if sim is not None else active.active_simulator()
+
+
+def _requires_device(name: str, sim: NetworkSimulator | None) -> dict:
     try:
-        return sim.get_device(name)
+        return _sim(sim).get_device(name)
     except DeviceNotFoundError:
         raise
 
 
 def check_ip_configuration(
-    device: str, sim: NetworkSimulator = simulator
+    device: str, sim: NetworkSimulator | None = None
 ) -> dict:
     """Analyse l'adresse IPv4 simulée du poste (détection APIPA)."""
     info = _requires_device(device, sim)
@@ -27,7 +32,7 @@ def check_ip_configuration(
     }
 
 
-def check_vlan(device: str, sim: NetworkSimulator = simulator) -> dict:
+def check_vlan(device: str, sim: NetworkSimulator | None = None) -> dict:
     """Compare le VLAN actuel au VLAN attendu."""
     info = _requires_device(device, sim)
     vlan = info.get("vlan")
@@ -48,7 +53,7 @@ def check_vlan(device: str, sim: NetworkSimulator = simulator) -> dict:
     }
 
 
-def check_dhcp(device: str, sim: NetworkSimulator = simulator) -> dict:
+def check_dhcp(device: str, sim: NetworkSimulator | None = None) -> dict:
     """Vérifie l'état DHCP simulé."""
     info = _requires_device(device, sim)
     dhcp = info.get("dhcp", "unknown")
@@ -66,7 +71,7 @@ def check_dhcp(device: str, sim: NetworkSimulator = simulator) -> dict:
     }
 
 
-def check_dns(host: str, sim: NetworkSimulator = simulator) -> dict:
+def check_dns(host: str, sim: NetworkSimulator | None = None) -> dict:
     """Vérifie la résolution DNS simulée pour un hôte connu."""
     info = _requires_device(host, sim)
     dns = info.get("dns", "ok")
@@ -80,7 +85,7 @@ def check_dns(host: str, sim: NetworkSimulator = simulator) -> dict:
     }
 
 
-def check_gateway(device: str, sim: NetworkSimulator = simulator) -> dict:
+def check_gateway(device: str, sim: NetworkSimulator | None = None) -> dict:
     """Vérifie l'accessibilité de la passerelle simulée."""
     info = _requires_device(device, sim)
     gateway = info.get("gateway")
@@ -99,7 +104,7 @@ def check_gateway(device: str, sim: NetworkSimulator = simulator) -> dict:
     }
 
 
-def ping_host(host: str, sim: NetworkSimulator = simulator) -> dict:
+def ping_host(host: str, sim: NetworkSimulator | None = None) -> dict:
     """Ping simulé vers un hôte connu."""
     info = _requires_device(host, sim)
     reachable = bool(info.get("reachable", True)) and info.get("status") == "online"
@@ -113,8 +118,9 @@ def ping_host(host: str, sim: NetworkSimulator = simulator) -> dict:
     }
 
 
-def traceroute(host: str, sim: NetworkSimulator = simulator) -> dict:
+def traceroute(host: str, sim: NetworkSimulator | None = None) -> dict:
     """Traceroute simulé à partir de la topologie."""
+    sim = _sim(sim)
     _requires_device(host, sim)
     try:
         uplink = sim.get_device(host).get("type")
@@ -125,7 +131,7 @@ def traceroute(host: str, sim: NetworkSimulator = simulator) -> dict:
     return {"tool": "traceroute", "host": host, "ok": True, "hops": hops, "ttl": 64}
 
 
-def get_device_status(device: str, sim: NetworkSimulator = simulator) -> dict:
+def get_device_status(device: str, sim: NetworkSimulator | None = None) -> dict:
     info = _requires_device(device, sim)
     return {
         "tool": "get_device_status",
@@ -163,8 +169,9 @@ ACTIONS_BY_FINDING = {
 }
 
 
-def diagnosis(device: str, sim: NetworkSimulator = simulator) -> dict:
+def diagnosis(device: str, sim: NetworkSimulator | None = None) -> dict:
     """Batterie de contrôles : IP, DHCP, VLAN, passerelle, DNS."""
+    sim = _sim(sim)
     checks = [
         check_ip_configuration(device, sim),
         check_dhcp(device, sim),

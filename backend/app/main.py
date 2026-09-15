@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from app.api.routes import diagnostics, health, incidents, reports, voice
+from app.api.routes import diagnostics, health, incidents, networks, reports, voice
 from app.core import logging as core_logging
 from app.core.config import settings
 from app.core.middleware import (
@@ -52,6 +52,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 app.include_router(health.router)
 app.include_router(diagnostics.router)
+app.include_router(networks.router)
 app.include_router(incidents.router)
 app.include_router(reports.router)
 app.include_router(voice.router)

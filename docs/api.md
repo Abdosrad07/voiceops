@@ -41,6 +41,50 @@ Diagnostic complet (IP, VLAN, DHCP, DNS, passerelle, actions recommandées).
 ### `GET /api/diagnostics/device/{name}/{tool}`
 Un outil isolé : `ip`, `vlan`, `dhcp`, `dns`, `gateway`, `ping`, `traceroute`, `status`.
 
+## Réseaux importés
+
+Permet de charger n'importe quelle topologie ; le réseau importé est utilisé
+automatiquement par les diagnostics et les outils de l'agent vocal.
+Sans import, le réseau de démo statique (`simulator/*.json`) sert de repli.
+
+### `POST /api/networks`
+Importe un descripteur réseau. Le premier import devient automatiquement actif.
+```json
+{
+  "name": "Entrepôt Lyon",
+  "description": "Topologie du site secondaire",
+  "payload": {
+    "devices": {
+      "PC-B11": { "type": "PC", "ip": "169.254.5.11", "vlan": 30, "expected_vlan": 40,
+                  "dhcp": "failed", "dns": "ok", "status": "online", "reachable": true },
+      "PC-B12": { "type": "PC", "ip": "10.0.5.12", "vlan": 40, "expected_vlan": 40,
+                  "dhcp": "ok", "dns": "failed", "status": "online", "reachable": true }
+    },
+    "topology": { "links": [{"from": "SW-X", "to": "RTR-CORE"}] },
+    "scenarios": []
+  }
+}
+```
+- 201 : réseau créé. `device_count`, `scenarios` renvoyés.
+- 422 : `devices` manquant ou vide.
+
+Les `scenarios` sont **déduits automatiquement** (VLAN mismatch, DHCP fail,
+DNS fail, passerelle injoignable) si la liste est omise ou vide.
+
+### `GET /api/networks`
+Liste les réseaux importés (plus récent en premier).
+
+### `GET /api/networks/{id}`
+Détail (payload complet, device_count, scénarios).
+
+### `POST /api/networks/{id}/activate`
+Active un réseau importé (désactive tous les autres). Les diagnostics et
+outils utilisent désormais cette topologie.
+
+### `DELETE /api/networks/{id}`
+Supprime le réseau. S'il était actif, les diagnostics retombent sur le
+réseau statique par défaut.
+
 ## Incidents
 
 ### `POST /api/incidents`

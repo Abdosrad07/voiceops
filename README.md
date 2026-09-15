@@ -463,6 +463,7 @@ voiceops/
 │   │   │       ├── voice.py
 │   │   │       ├── incidents.py
 │   │   │       ├── diagnostics.py
+│   │   │       ├── networks.py
 │   │   │       └── reports.py
 │   │   │
 │   │   ├── core/
@@ -482,6 +483,8 @@ voiceops/
 │   │   │   └── tools.py
 │   │   │
 │   │   ├── network/
+│   │   │   ├── active.py
+│   │   │   ├── imports.py
 │   │   │   ├── simulator.py
 │   │   │   ├── devices.py
 │   │   │   └── diagnostics.py
@@ -493,6 +496,7 @@ voiceops/
 │   │   │
 │   │   ├── models/
 │   │   │   ├── incident.py
+│   │   │   ├── network.py
 │   │   │   ├── session.py
 │   │   │   ├── report.py
 │   │   │   └── tool_call.py
